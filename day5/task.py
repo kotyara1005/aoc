@@ -67,4 +67,4 @@ def main(lines):
 
 if __name__ == '__main__':
     main(TEST.splitlines())
-    main(open("input").read().splitlines())
+    main(open("input").read().splitlines( ))
