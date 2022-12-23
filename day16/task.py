@@ -1,6 +1,19 @@
 import re
 from pprint import pprint
 from typing import NamedTuple
+import time
+from contextlib import ContextDecorator
+
+
+class TimeIt(ContextDecorator):
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print(time.time() - self.start)
+        return True
+
 
 TEST = """\
 Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
@@ -35,20 +48,20 @@ def parse_input(s: str):
             for n3 in names:
                 paths[n3][n2] = paths[n2][n3] = min(paths[n3][n2], paths[n2][n3], paths[n2][n1] + paths[n1][n3])
 
-    print('\t','\t'.join(names))
-    for n1 in names:
-        print(n1, '\t', end='')
-        for n2 in names:
-            print(paths[n1][n2], '\t', end='')
-        print()
-
-    pprint(rates)
+    # print('\t','\t'.join(names))
+    # for n1 in names:
+    #     print(n1, '\t', end='')
+    #     for n2 in names:
+    #         print(paths[n1][n2], '\t', end='')
+    #     print()
+    #
+    # pprint(rates)
     return paths, rates
 
 
+@TimeIt()
 def part_one(paths, rates):
     opened = set(name for name, rate in rates.items() if rate == 0)
-    stack = []
 
     def backtrack(name, time, prev):
         if time == 0:
@@ -59,7 +72,6 @@ def part_one(paths, rates):
         prev += rates[name] * (time - 1)
         result = prev
         opened.add(name)
-        stack.append(name)
 
         for nxt in paths:
             if nxt in opened:
@@ -68,7 +80,6 @@ def part_one(paths, rates):
             result = max(result, backtrack(nxt, time - 1 - paths[name][nxt], prev))
 
         opened.discard(name)
-        stack.pop()
         return result
 
     rv = backtrack('AA', 31, 0)
@@ -80,6 +91,7 @@ class Task(NamedTuple):
     dest: str
 
 
+@TimeIt()
 def part_two(paths, rates):
     opened = set(name for name, rate in rates.items() if rate == 0)
 
